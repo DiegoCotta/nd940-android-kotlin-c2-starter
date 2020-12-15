@@ -21,9 +21,11 @@ class MainFragment : Fragment() {
         binding.lifecycleOwner = this
 
         binding.viewModel = viewModel
-
+        binding.asteroidRecycler.adapter = AsteroidAdapter {
+            viewModel.displayAsteroidDetails(it)
+        }
         setHasOptionsMenu(true)
-        Toast.makeText(requireContext(),BuildConfig.API_KEY,Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), BuildConfig.API_KEY, Toast.LENGTH_LONG).show()
 
         return binding.root
     }
