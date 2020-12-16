@@ -18,4 +18,13 @@
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 
+    <style name="TitleStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DescriptionStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">18sp</item>
+    </style>
+
 </resources>
