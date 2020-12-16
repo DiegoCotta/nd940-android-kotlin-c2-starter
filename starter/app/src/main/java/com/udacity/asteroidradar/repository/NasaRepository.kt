@@ -17,22 +17,14 @@ import java.util.*
 
 class NasaRepository(private val database: AsteroidDatabase) {
 
-    private var today = ""
-
     private val _imageOfDay = MutableLiveData<ImageOfDay>()
 
     val imageOfDay: LiveData<ImageOfDay>
         get() = _imageOfDay
 
-    init {
-        val calendar = Calendar.getInstance()
-        val df = SimpleDateFormat("yyyy-MM-dd");
-        today = df.format(calendar.time)
-    }
-
 
     val asteroids: LiveData<List<Asteroid>> =
-        Transformations.map(database.asteroidDao.getAsteroids(today)) {
+        Transformations.map(database.asteroidDao.getAsteroids(getTodayDate())) {
             it.asDomainModel()
         }
 

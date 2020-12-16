@@ -3,6 +3,7 @@ package com.udacity.asteroidradar.main
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
+import com.udacity.asteroidradar.api.getTodayDate
 import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.NasaRepository
@@ -18,10 +19,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
-            val calendar = Calendar.getInstance()
-            val df = SimpleDateFormat("yyyy-MM-dd");
+
             try {
-                nasaRepository.refreshAsteroids(df.format(calendar.time))
+                nasaRepository.refreshAsteroids(getTodayDate())
             } catch (e: Exception) {
 
             }

@@ -71,3 +71,9 @@ fun ArrayList<Asteroid>.asDatabaseModel(): Array<AsteroidEntity> {
         )
     }.toTypedArray()
 }
+
+fun getTodayDate(): String{
+    val calendar = Calendar.getInstance()
+    val df = SimpleDateFormat("yyyy-MM-dd");
+    return df.format(calendar.time)
+}
