@@ -9,6 +9,13 @@
         <item name="android:textColor">@color/default_text_color</item>
         <item name="android:background">@color/app_background</item>
         <item name="background">@color/app_background</item>
+        <item name="alertDialogTheme">@style/MyAlertDialogStyle</item>
+    </style>
+
+    <style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:background">@android:color/white</item>
+        <item name="background">@android:color/white</item>
+        <item name="android:textColor">@color/colorAccent</item>
     </style>
 
 </resources>

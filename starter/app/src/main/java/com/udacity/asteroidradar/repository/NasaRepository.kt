@@ -11,8 +11,6 @@ import com.udacity.asteroidradar.domain.ImageOfDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class NasaRepository(private val database: AsteroidDatabase) {
@@ -24,16 +22,42 @@ class NasaRepository(private val database: AsteroidDatabase) {
 
 
     val asteroids: LiveData<List<Asteroid>> =
-        Transformations.map(database.asteroidDao.getAsteroids(getTodayDate())) {
+        Transformations.map(database.asteroidDao.getAsteroids()) {
             it.asDomainModel()
         }
 
-    suspend fun refreshAsteroids(startDate: String, endDate: String = "") {
+    val todayAsteroids: LiveData<List<Asteroid>> = Transformations.map(
+        database.asteroidDao.getTodayAsteroids(
+            getTodayDate()
+        )
+    ) {
+        it.asDomainModel()
+    }
+
+    val weekAsteroids: LiveData<List<Asteroid>> = Transformations.map(
+        database.asteroidDao.getWeekAsteroids(
+            getTodayDate(),
+            getLastDayOfWeek()
+        )
+    ) {
+        it.asDomainModel()
+    }
+
+
+    suspend fun refreshAsteroids(startDate: String ) {
         withContext(Dispatchers.IO) {
-            val asteroidList = Network.nasaService.getAsteroidlist(startDate, endDate).await()
+            val asteroidList = Network.nasaService.getAsteroidlist(startDate).await()
             database.asteroidDao.insertAll(*parseAsteroidsJsonResult(JSONObject(asteroidList)).asDatabaseModel())
         }
     }
+
+
+    suspend fun deleteOldAsteroid(date: String) {
+        withContext(Dispatchers.IO) {
+            database.asteroidDao.deleteOldAsteroids(date)
+        }
+    }
+
 
     suspend fun getImageOfDay() {
         withContext(Dispatchers.IO) {

@@ -3,6 +3,7 @@ package com.udacity.asteroidradar.main
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
+import com.udacity.asteroidradar.api.getLastDayOfWeek
 import com.udacity.asteroidradar.api.getTodayDate
 import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.database.getDatabase
@@ -17,7 +18,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = getDatabase(application)
     private val nasaRepository = NasaRepository(database)
 
+    private val _navigateToAsteroidDetails = MutableLiveData<Asteroid?>()
+
+    val navigateToAsteroidDetails: LiveData<Asteroid?>
+        get() = _navigateToAsteroidDetails
+
+    fun displayAsteroidDetails(marsProperty: Asteroid) {
+        _navigateToAsteroidDetails.value = marsProperty
+    }
+
+    fun displayAsteroidDetailsComplete() {
+        _navigateToAsteroidDetails.value = null
+    }
+
+    private val menuFilter = MutableLiveData<MenuFilter>()
+
     init {
+        menuFilter.value = MenuFilter.TODAY
         viewModelScope.launch {
 
             try {
@@ -35,21 +52,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    val asteroidList = nasaRepository.asteroids
     val imageOfDay = nasaRepository.imageOfDay
-
-
-    private val _navigateToAsteroidDetails = MutableLiveData<Asteroid?>()
-
-    val navigateToAsteroidDetails: LiveData<Asteroid?>
-        get() = _navigateToAsteroidDetails
-
-    fun displayAsteroidDetails(marsProperty: Asteroid) {
-        _navigateToAsteroidDetails.value = marsProperty
+    val asteroidList = Transformations.switchMap(menuFilter) { filter ->
+        return@switchMap when (filter) {
+            MenuFilter.TODAY -> nasaRepository.todayAsteroids
+            MenuFilter.WEEK -> nasaRepository.weekAsteroids
+            MenuFilter.ALL -> nasaRepository.asteroids
+        }
     }
 
-    fun displayAsteroidDetailsComplete() {
-        _navigateToAsteroidDetails.value = null
+    fun setFilterAll() {
+        menuFilter.value = MenuFilter.ALL
+    }
+
+    fun setFilterWeek() {
+        menuFilter.value = MenuFilter.WEEK
+
+    }
+
+    fun setFilterToday() {
+        menuFilter.value = MenuFilter.TODAY
     }
 
     class Factory(val app: Application) : ViewModelProvider.Factory {

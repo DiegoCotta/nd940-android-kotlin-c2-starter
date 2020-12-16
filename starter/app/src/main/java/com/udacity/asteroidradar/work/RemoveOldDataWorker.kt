@@ -8,14 +8,13 @@ import com.udacity.asteroidradar.api.getTodayDate
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.NasaRepository
 import retrofit2.HttpException
-import java.text.SimpleDateFormat
-import java.util.*
+import java.lang.Exception
 
-class RefreshDataWorker(appContext: Context, params: WorkerParameters) :
+class RemoveOldDataWorker(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
     companion object {
-        const val WORK_NAME = "RefreshDataWorker"
+        const val WORK_NAME = "RemoveOldDataWorker"
     }
 
     /**
@@ -25,10 +24,10 @@ class RefreshDataWorker(appContext: Context, params: WorkerParameters) :
         val database = getDatabase(applicationContext)
         val repository = NasaRepository(database)
         return try {
-            repository.refreshAsteroids(getTodayDate())
+            repository.deleteOldAsteroid(getTodayDate())
             Result.success()
-        } catch (e: HttpException) {
-            Result.retry()
+        } catch (e: Exception) {
+            Result.failure()
         }
     }
 }

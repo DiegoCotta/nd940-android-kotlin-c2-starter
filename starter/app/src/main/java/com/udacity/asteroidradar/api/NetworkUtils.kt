@@ -34,8 +34,10 @@ fun parseAsteroidsJsonResult(jsonResult: JSONObject): ArrayList<Asteroid> {
             val isPotentiallyHazardous = asteroidJson
                 .getBoolean("is_potentially_hazardous_asteroid")
 
-            val asteroid = Asteroid(id, codename, formattedDate, absoluteMagnitude,
-                estimatedDiameter, relativeVelocity, distanceFromEarth, isPotentiallyHazardous)
+            val asteroid = Asteroid(
+                id, codename, formattedDate, absoluteMagnitude,
+                estimatedDiameter, relativeVelocity, distanceFromEarth, isPotentiallyHazardous
+            )
             asteroidList.add(asteroid)
         }
     }
@@ -72,8 +74,15 @@ fun ArrayList<Asteroid>.asDatabaseModel(): Array<AsteroidEntity> {
     }.toTypedArray()
 }
 
-fun getTodayDate(): String{
+fun getTodayDate(): String {
     val calendar = Calendar.getInstance()
+    val df = SimpleDateFormat("yyyy-MM-dd");
+    return df.format(calendar.time)
+}
+
+fun getLastDayOfWeek(): String {
+    val calendar = Calendar.getInstance()
+    calendar.add(7, Calendar.DAY_OF_YEAR)
     val df = SimpleDateFormat("yyyy-MM-dd");
     return df.format(calendar.time)
 }
