@@ -4,30 +4,63 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.udacity.asteroidradar.BuildConfig
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.udacity.asteroidradar.R
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by lazy {
-        ViewModelProvider(this).get(MainViewModel::class.java)
+        val activity = requireNotNull(this.activity) {
+            "You can only access the viewModel after onViewCreated()"
+        }
+        ViewModelProvider(
+            this,
+            MainViewModel.Factory(activity.application)
+        ).get(MainViewModel::class.java)
+
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        val binding = FragmentMainBinding.inflate(inflater)
+    private var asteroidAdapter: AsteroidAdapter? = null
+    private lateinit var binding: FragmentMainBinding
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentMainBinding.inflate(inflater)
         binding.lifecycleOwner = this
 
         binding.viewModel = viewModel
-        binding.asteroidRecycler.adapter = AsteroidAdapter {
+
+        asteroidAdapter = AsteroidAdapter {
             viewModel.displayAsteroidDetails(it)
+
         }
+
+        binding.asteroidRecycler.apply {
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            adapter = asteroidAdapter
+        }
+
         setHasOptionsMenu(true)
-        Toast.makeText(requireContext(), BuildConfig.API_KEY, Toast.LENGTH_LONG).show()
+
+        setObservables()
 
         return binding.root
+    }
+
+    private fun setObservables() {
+        viewModel.navigateToAsteroidDetails.observe(viewLifecycleOwner, Observer { asteroid ->
+            if(asteroid != null) {
+                findNavController().navigate(MainFragmentDirections.actionShowDetail(asteroid))
+                viewModel.displayAsteroidDetailsComplete()
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

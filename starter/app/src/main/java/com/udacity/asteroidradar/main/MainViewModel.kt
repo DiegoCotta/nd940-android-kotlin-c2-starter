@@ -1,23 +1,47 @@
 package com.udacity.asteroidradar.main
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.udacity.asteroidradar.Asteroid
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.*
+import com.udacity.asteroidradar.domain.Asteroid
+import com.udacity.asteroidradar.database.getDatabase
+import com.udacity.asteroidradar.repository.NasaRepository
+import kotlinx.coroutines.launch
+import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val database = getDatabase(application)
+    private val nasaRepository = NasaRepository(database)
+
+    init {
+        viewModelScope.launch {
+            val calendar = Calendar.getInstance()
+            val df = SimpleDateFormat("yyyy-MM-dd");
+            try {
+                nasaRepository.refreshAsteroids(df.format(calendar.time))
+            } catch (e: Exception) {
+
+            }
+        }
+        viewModelScope.launch {
+            try {
+                nasaRepository.getImageOfDay()
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+    val asteroidList = nasaRepository.asteroids
+    val imageOfDay = nasaRepository.imageOfDay
 
 
+    private val _navigateToAsteroidDetails = MutableLiveData<Asteroid?>()
 
-    private val _listAsteroids = MutableLiveData<List<Asteroid>>()
-
-    val listAsteroids: LiveData<List<Asteroid>>
-        get() = _listAsteroids
-
-
-    private val _navigateToAsteroidDetails = MutableLiveData<Asteroid>()
-
-    val navigateToSelectedProperty: LiveData<Asteroid>
+    val navigateToAsteroidDetails: LiveData<Asteroid?>
         get() = _navigateToAsteroidDetails
 
     fun displayAsteroidDetails(marsProperty: Asteroid) {
@@ -26,5 +50,15 @@ class MainViewModel : ViewModel() {
 
     fun displayAsteroidDetailsComplete() {
         _navigateToAsteroidDetails.value = null
+    }
+
+    class Factory(val app: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return MainViewModel(app) as T
+            }
+            throw IllegalArgumentException("Unable to construct viewmodel")
+        }
     }
 }

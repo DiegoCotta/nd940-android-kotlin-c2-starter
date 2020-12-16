@@ -5,21 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.udacity.asteroidradar.Asteroid
+import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.databinding.ItemAsteroidBinding
 
 //I prefer to use Higher-Order Functions from Kotlin instead of interface for this case
 class AsteroidAdapter(val onClickListener: (Asteroid) -> Unit) :
-        ListAdapter<Asteroid, AsteroidAdapter.ItemAsteroidViewHolder>(DiffCallback) {
-
-
-    class ItemAsteroidViewHolder(private var binding: ItemAsteroidBinding) :
-            RecyclerView.ViewHolder(binding.root) {
-        fun bind(asteroid: Asteroid) {
-            binding.asteroid = asteroid
-            binding.executePendingBindings()
-        }
-    }
+    ListAdapter<Asteroid, AsteroidAdapter.ItemAsteroidViewHolder>(DiffCallback) {
 
     companion object DiffCallback : DiffUtil.ItemCallback<Asteroid>() {
         override fun areItemsTheSame(oldItem: Asteroid, newItem: Asteroid): Boolean {
@@ -31,15 +22,32 @@ class AsteroidAdapter(val onClickListener: (Asteroid) -> Unit) :
         }
     }
 
+    class ItemAsteroidViewHolder(private var binding: ItemAsteroidBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(
+            asteroid: Asteroid,
+            onClickListener: (Asteroid) -> Unit
+        ) {
+            binding.asteroid = asteroid
+            binding.root.setOnClickListener { onClickListener(asteroid) }
+            binding.executePendingBindings()
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): ItemAsteroidViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ItemAsteroidBinding.inflate(layoutInflater, parent, false)
+                return ItemAsteroidViewHolder(binding)
+            }
+        }
+    }
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemAsteroidViewHolder {
-        return ItemAsteroidViewHolder(ItemAsteroidBinding.inflate(LayoutInflater.from(parent.context)))
+        return ItemAsteroidViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: ItemAsteroidViewHolder, position: Int) {
-        val marsProperty = getItem(position)
-        holder.itemView.setOnClickListener {
-            onClickListener(marsProperty)
-        }
-        holder.bind(marsProperty)
+        holder.bind(getItem(position), onClickListener)
     }
 }
